@@ -8,11 +8,17 @@ struct discontinuityFixer {
 	double value;
 };
 
+struct calculateResult {
+	bool allDiscontinuitiesFixed;
+	double value;
+};
+
 class DefinitiveIntegralCalculator {
 public:
-	void calculate(int);
-	void selectEquationThenCalculate();
+	calculateResult calculate(double, double, int, int, bool);
+	void inputCalculateAndPrint();
 private:
+	void printMarginOfError(double, double, int, int);
 	bool checkForDiscontinuity(double);
 	struct discontinuityFixer fixDiscontinuity(double, double, double, int, int);
 	void printResult(bool, double);
@@ -20,16 +26,22 @@ private:
 	InputController inputController;
 };
 
-void DefinitiveIntegralCalculator::selectEquationThenCalculate() {
+void DefinitiveIntegralCalculator::inputCalculateAndPrint() {
 	int equationId = chooseEquation();
-	calculate(equationId);
-}
-
-void DefinitiveIntegralCalculator::calculate(int equationId) {
 	double lowerLimit = inputController.takeLowerLimit();
 	double upperLimit = inputController.takeUpperLimit();
 	int intervalsAmount = inputController.takeIntervalsAmount();
 
+	calculateResult result = calculate(lowerLimit, upperLimit, intervalsAmount, equationId, false);
+	
+	printResult(result.allDiscontinuitiesFixed, result.value); // if gap is not fixed, result does not matter
+
+	if (result.allDiscontinuitiesFixed) {
+		printMarginOfError(lowerLimit, upperLimit, intervalsAmount, equationId);
+	}
+}
+
+calculateResult DefinitiveIntegralCalculator::calculate(double lowerLimit, double upperLimit, int intervalsAmount, int equationId, bool onlyResultNeeded) {
 	double stepSize = (upperLimit - lowerLimit) / intervalsAmount;
 	const double epsilon = stepSize / 2;
 
@@ -45,7 +57,9 @@ void DefinitiveIntegralCalculator::calculate(int equationId) {
 		if (discontinuityFixed) {
 			lowerLimitValue = fixed.value;
 		}
-		printDiscontinuityInfo(discontinuityFixed, lowerLimit, lowerLimitValue, epsilon);
+		if (!onlyResultNeeded) {
+			printDiscontinuityInfo(discontinuityFixed, lowerLimit, lowerLimitValue, epsilon);
+		}
 	}
 	if (checkForDiscontinuity(upperLimitValue) && discontinuityFixed) {
 		discontinuityFixer fixed;
@@ -54,7 +68,9 @@ void DefinitiveIntegralCalculator::calculate(int equationId) {
 		if (discontinuityFixed) {
 			upperLimitValue = fixed.value;
 		}
-		printDiscontinuityInfo(discontinuityFixed, upperLimit, upperLimitValue, epsilon);
+		if (!onlyResultNeeded) {
+			printDiscontinuityInfo(discontinuityFixed, upperLimit, upperLimitValue, epsilon);
+		}
 	}
 
 	double integrationResult = lowerLimitValue + upperLimitValue;
@@ -75,8 +91,10 @@ void DefinitiveIntegralCalculator::calculate(int equationId) {
 			else {
 				discontinuityFixed = fixed.isFixed; // false
 			}
-
-			printDiscontinuityInfo(discontinuityFixed, lowerLimit + i * stepSize, equationValueInStep, epsilon);
+			
+			if (!onlyResultNeeded) {
+				printDiscontinuityInfo(discontinuityFixed, lowerLimit + i * stepSize, equationValueInStep, epsilon);
+			}
 		}
 
 		if (i % 2 == 0) {
@@ -89,7 +107,7 @@ void DefinitiveIntegralCalculator::calculate(int equationId) {
 
 	integrationResult = integrationResult * (stepSize / 3);
 
-	printResult(discontinuityFixed, integrationResult); // if gap is not fixed, result does not matter
+	return { discontinuityFixed, integrationResult };
 }
 
 bool DefinitiveIntegralCalculator::checkForDiscontinuity(double value) {
@@ -112,6 +130,20 @@ discontinuityFixer DefinitiveIntegralCalculator::fixDiscontinuity(double lowerLi
 	else {
 		return { false, 0 };
 	}
+}
+
+void DefinitiveIntegralCalculator::printMarginOfError(double lowerLimit, double upperLimit, int intervalsAmount, int equationId) {
+	double k = use4thDerivativeOfEquationById(upperLimit, equationId);
+	double error = (k*(upperLimit-lowerLimit)) / (180*std::pow(intervalsAmount, 4));
+	error = std::abs(error);
+	std::cout << "Methods margin of error by a specific formula: " << error << std::endl;
+
+	const double constForSympsonsMethod = (double) 1 / (double) 15;
+	double integralN = calculate(lowerLimit, upperLimit, intervalsAmount, equationId, true).value;
+	double integral2N = calculate(lowerLimit, upperLimit, 2*intervalsAmount, equationId, true).value;
+
+	double rungeError = constForSympsonsMethod * std::abs(integral2N - integralN);
+	std::cout << "Methods margin of error by Runge rule: " << rungeError << std::endl;
 }
 
 void DefinitiveIntegralCalculator::printResult(bool allDiscontinuityResolved, double result) {
