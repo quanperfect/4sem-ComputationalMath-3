@@ -13,10 +13,11 @@ int chooseEquation() {
 	int choice;
 	std::cout << "Equations: " << std::endl;
 	std::cout << "[1] x * sin(x)" << std::endl;
-	std::cout << "[2] log2(x)" << std::endl;
+	std::cout << "[2] 1/x" << std::endl;
 	std::cout << "[3] sin(x) / x" << std::endl;
+	std::cout << "[4] (x^2-2x) / (x^2 - 4)" << std::endl;
 	choice = inputController.takeEquationId();
-	std::cout << "-------------------" << std::endl;
+	std::cout << "--------------------------------------" << std::endl;
 
 	return choice;
 }
@@ -26,12 +27,17 @@ double f1(double x) {
 }
 
 double f2(double x) {
-	return log2(x);
+	return (1/x);
 }
 
 double f3(double x) {
 	return (sin(x)/x);
 }
+
+double f4(double x) {
+	return ( (x*x - 2*x)/(x*x - 4) );
+}
+
 
 double useEquationById(double x, int id) {
 	if (id == 1) {
@@ -43,10 +49,16 @@ double useEquationById(double x, int id) {
 	if (id == 3) {
 		return f3(x);
 	}
-
+	if (id == 4) {
+		return f4(x);
+	}
+	
 	throw std::invalid_argument("Definitive Integral Calculator used equationId that does not exist.");
 }
 
+/*
+* reserved for a specific formula used for errors
+* 
 double g1(double x) {
 	return (x * sin(x) - 4 * cos(x));
 }
@@ -74,8 +86,8 @@ double use4thDerivativeOfEquationById(double x, int id) {
 
 	throw std::invalid_argument("Definitive Integral Calculator used equationId that does not exist.");
 }
+*/
 
-//#define f1(x) ( cos(x)-x*exp(x) )
 
 #endif // !
 #pragma once

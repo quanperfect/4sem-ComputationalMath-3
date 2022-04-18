@@ -29,12 +29,12 @@ int InputController::takeIntervalsAmount() {
 }
 
 int InputController::takeEquationId()  {
-	std::string fineMessage = "Please enter an equation id (from 1 to 3): ";
+	std::string fineMessage = "Please enter an equation id (from 1 to 4): ";
 	std::string errorMessage = "Non-valid input. " + fineMessage;
 	std::cout << fineMessage;
 	int result = 0;
 	result = takeInteger(errorMessage);
-	while (result < 1 || result > 3) {
+	while (result < 1 || result > 4) {
 		std::cout << errorMessage;
 		result = takeInteger(errorMessage);
 	}
@@ -158,6 +158,10 @@ int InputController::takeInteger(std::string message) {
 			}
 		}
 
+		if (input.size() > 10) {
+			correctInput = false;
+		}
+
 		if (correctInput) {
 			value = std::stoi(input);
 		}
@@ -166,5 +170,5 @@ int InputController::takeInteger(std::string message) {
 		}
 	}
 
-	return value;
+ 	return value;
 }

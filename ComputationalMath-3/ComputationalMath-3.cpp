@@ -7,4 +7,6 @@ int main()
 
     DefinitiveIntegralCalculator defIntegralCalculator;
     defIntegralCalculator.inputCalculateAndPrint();
+
+    std::cout << "\n\n\n\n" << std::endl; // to move away visual studio console info, just for looks
 }
